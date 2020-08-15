@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RestService.Data
@@ -11,6 +13,7 @@ namespace RestService.Data
     public class InMemoryUserRepository : IUserRepository
     {
         private readonly List<User> _userList;
+        
         public InMemoryUserRepository()
         {
             _userList = new List<User>
@@ -20,21 +23,21 @@ namespace RestService.Data
                     Id= Guid.NewGuid().ToString(),
                     Email="amit@gmail.com",
                     CreatedDate=DateTime.UtcNow,
-                     Password= "1234"
+                     Password= Salt.GenerateHash("1234", Salt.CreateSalt(5))
                 },
                 new User
                 {
                     Id= Guid.NewGuid().ToString(),
                     Email="dave@gmail.com",
                     CreatedDate=DateTime.UtcNow.AddDays(-1),
-                     Password= "1234"
+                     Password= Salt.GenerateHash("1234", Salt.CreateSalt(5))
                 },
                 new User
                 {
                     Id= Guid.NewGuid().ToString(),
                     Email="Joey@gmail.com",
                     CreatedDate=DateTime.UtcNow.AddDays(-2),
-                     Password= "1234"
+                     Password= Salt.GenerateHash("1234", Salt.CreateSalt(5))
                 }
 
             };
@@ -43,6 +46,7 @@ namespace RestService.Data
         {
             user.Id = Guid.NewGuid().ToString();
             user.CreatedDate = DateTime.UtcNow;
+            user.Password = Salt.GenerateHash(user.Password, Salt.CreateSalt(5));
             _userList.Add(user);
             return user;
         }
@@ -76,7 +80,7 @@ namespace RestService.Data
         {
             var user = _userList.FirstOrDefault(x => x.Id == id);
             user.Email = updatedUser.Email;
-            user.Password = updatedUser.Password;
+            user.Password = Salt.GenerateHash(user.Password, Salt.CreateSalt(5));
             return user;
         }
     }
